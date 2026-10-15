@@ -63,16 +63,8 @@ jobs:
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
         git clone https://github.com/JacoaFur/AnyKernel3-Fork --depth=1 AnyKernel3
-        
-        # 1. 修正設備檢查：精確鎖定小米 5 的代號 gemini
         sed -i 's/do.devicecheck=0/do.devicecheck=1/g' AnyKernel3/anykernel.sh
-        sed -i 's/maguro/gemini/g' AnyKernel3/anykernel.sh
-        
-        # 2. 丟掉你原本亂替換的 split_boot sed 瞎指揮字串（回歸 AnyKernel3 官方標準驅動流程）
-        
-        # 3. 【破案鐵證修正】：將我們在 out 中實質編譯出的兩大核心產物，精確塞入 AnyKernel3 根目錄
         cp android-kernel/out/arch/arm64/boot/Image.gz AnyKernel3/Image.gz
-        cp android-kernel/out/arch/arm64/boot/dtb AnyKernel3/dtb
 
     - name: 釋出小米 5 完全體 AnyKernel3 刷機包
       uses: actions/upload-artifact@v4
