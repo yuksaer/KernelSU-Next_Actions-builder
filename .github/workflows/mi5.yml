@@ -42,7 +42,7 @@ jobs:
     - name: Download kernel source
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
-        git clone --recursive https://github.com/Inkypen79/android_kernel_xiaomi_msm8996.git -b lineage-24.0 android-kernel --depth=1
+        git clone --recursive https://github.com/yuksaer/android_kernel_xiaomi_msm8996.git -b lineage-24.0 android-kernel --depth=1
         cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel/scripts
         sed -i 's/ -dirty//g' setlocalversion
 
