@@ -1,0 +1,72 @@
+name: Build LineageOS 24.0 Xiaomi Mi 5 Kernel
+
+on:
+  workflow_dispatch:
+
+env:
+  TZ: America/New_York
+
+jobs:
+  build:
+    name: Build Kernel by ${{ github.actor }}
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set swap to 10G
+      uses: pierotofy/set-swap-space@master
+      with:
+        swap-size-gb: 10
+    
+    - name: Setup build kernel environment
+      run: |
+        echo "BUILD_TIME=$(TZ=America/New_York date "+%y%m%d")" >> $GITHUB_ENV
+        echo "BUILD_TIME_1=$(TZ=America/New_York date "+%Y-%m-%d")" >> $GITHUB_ENV
+        sudo apt-get update
+        sudo apt-get install git ccache automake flex lzop bison gperf build-essential zip curl zlib1g-dev g++-multilib bzip2 libbz2-dev liblz4-tool make squashfs-tools dpkg-dev libssl-dev python3 bc libc6-dev-i386 libncurses5-dev
+        mkdir -p $GITHUB_WORKSPACE/kernel_workspace
+    
+    - name: Download Clang from aosp
+      run: |
+        cd $GITHUB_WORKSPACE/kernel_workspace
+        mkdir clang-aosp
+        curl -L "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/531a564ba5426707dee226eccb19f104a7af5a5f/clang-r563880c.tar.gz" -o clang.tar.gz
+        tar -xf clang.tar.gz -C clang-aosp
+    
+    - name: Download Gcc from aosp
+      run: |
+        cd $GITHUB_WORKSPACE/kernel_workspace
+        git clone https://gitlab.com/crdroidandroid/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9 gcc-64 --depth=1
+        git clone https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_arm_arm-linux-androideabi-4.9 gcc-32 --depth=1
+    
+    - name: Download kernel source
+      run: |
+        cd $GITHUB_WORKSPACE/kernel_workspace
+        git clone --recursive https://github.com/Inkypen79/android_kernel_xiaomi_msm8996.git -b lineage-24.0 android-kernel --depth=1
+        cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel/scripts
+        sed -i 's/ -dirty//g' setlocalversion
+
+    - name: Run Build and Verify Script
+      run: |
+        cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel
+        rm -rf KernelSU-Next
+        chmod +x build_kernel.sh
+        ./build_kernel.sh
+
+    - name: Verify Output Image
+      run: |
+        cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel
+        ls -l out/arch/arm64/boot/Image.gz-dtb
+
+    - name: Prepare AnyKernel 打包
+      run: |
+        cd $GITHUB_WORKSPACE/kernel_workspace
+        git clone https://github.com/JacoaFur/AnyKernel3-Fork --depth=1 AnyKernel3
+        # 【重要修正】：將白名單編譯出來、完美對齊原廠 7 個 DTB 的完全體內核複製進卡刷包根目錄
+        cp android-kernel/out/arch/arm64/boot/Image.gz-dtb AnyKernel3/Image.gz-dtb
+
+    - name: Upload Gemini AnyKernel3 zip
+      uses: actions/upload-artifact@v4
+      with:
+        name: AK3-LineageOS24.0-Gemini_Kernel-${{ env.BUILD_TIME }}
+        path: kernel_workspace/AnyKernel3/*
