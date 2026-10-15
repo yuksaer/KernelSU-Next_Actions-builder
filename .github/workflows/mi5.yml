@@ -63,13 +63,14 @@ jobs:
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
         git clone https://github.com/JacoaFur/AnyKernel3-Fork --depth=1 AnyKernel3
-        
-        echo "=== 完美對齊 ushion0a 的 AOSP 規範：同步複製純核心與獨立 dtb 二進位塊 ==="
-        cp android-kernel/out/arch/arm64/boot/Image.gz AnyKernel3/Image.gz
-        cp android-kernel/out/arch/arm64/boot/dtb AnyKernel3/dtb
+        sed -i 's/do.devicecheck=0/do.devicecheck=1/g' AnyKernel3/anykernel.sh
+        sed -i 's/maguro/gemini/g' AnyKernel3/anykernel.sh
+        sed -i 's/split_boot;/dump_boot;/g' AnyKernel3/anykernel.sh
+        sed -i 's/flash_boot;/write_boot;/g' AnyKernel3/anykernel.sh
+        cp android-kernel/out/arch/arm64/boot/Image.gz-dtb AnyKernel3/Image.gz-dtb
 
     - name: Upload Gemini AnyKernel3 zip
       uses: actions/upload-artifact@v4
       with:
         name: AK3-LineageOS24.0-Gemini_Kernel-${{ env.BUILD_TIME }}
-        path: kernel_workspace/AnyKernel3/*
+        path: AnyKernel3/*
