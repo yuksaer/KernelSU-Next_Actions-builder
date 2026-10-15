@@ -49,7 +49,6 @@ jobs:
     - name: Run Build and Verify Script
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel
-        rm -rf KernelSU-Next
         chmod +x build_kernel.sh
         ./build_kernel.sh
 
