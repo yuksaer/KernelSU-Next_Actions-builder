@@ -62,9 +62,9 @@ jobs:
     - name: Prepare AnyKernel3 完全體打包
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
-        git clone https://github.com/JacoaFur/AnyKernel3-Fork --depth=1 AnyKernel3
-        sed -i 's/do.devicecheck=0/do.devicecheck=1/g' AnyKernel3/anykernel.sh
+        git clone https://github.com/yuksaer/AnyKernel3-Fork --depth=1 AnyKernel3
         cp android-kernel/out/arch/arm64/boot/Image.gz AnyKernel3/Image.gz
+        cp android-kernel/out/arch/arm64/boot/dtb AnyKernel3/dtb
 
     - name: 釋出小米 5 完全體 AnyKernel3 刷機包
       uses: actions/upload-artifact@v4
